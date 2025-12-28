@@ -13,6 +13,8 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 // Load environment variables
 dotenv.config();
 
+const IS_VERCEL = process.env.VERCEL === "1" || process.env.VERCEL === "true";
+
 // Init app
 const app = express();
 
@@ -42,7 +44,7 @@ app.use(async (req, res, next) => {
 });
 
 // Connect MongoDB
-if (!process.env.VERCEL) {
+if (!IS_VERCEL) {
   connectDB();
 }
 
@@ -81,7 +83,7 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 
-if (!process.env.VERCEL) {
+if (!IS_VERCEL) {
   app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
   });

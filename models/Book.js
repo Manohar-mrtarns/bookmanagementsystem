@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+const FALLBACK_COVER =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='28' fill='%23334155'%3EBook%20Cover%3C/text%3E%3C/svg%3E";
+
 const bookSchema = new mongoose.Schema(
   {
     title: {
@@ -45,7 +48,7 @@ const bookSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: 'https://via.placeholder.com/200x300?text=Book+Cover',
+      default: FALLBACK_COVER,
     },
     description: {
       type: String,
