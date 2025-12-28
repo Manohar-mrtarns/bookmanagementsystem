@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Category from '../models/Category.js';
 
 // Get all categories
@@ -13,6 +14,9 @@ export const getAllCategories = async (req, res) => {
 // Get category by ID
 export const getCategoryById = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid category id' });
+    }
     const category = await Category.findById(req.params.id);
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
@@ -60,6 +64,10 @@ export const updateCategory = async (req, res) => {
   try {
     const { name, description } = req.body;
 
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid category id' });
+    }
+
     const category = await Category.findById(req.params.id);
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
@@ -90,6 +98,9 @@ export const updateCategory = async (req, res) => {
 // Delete category (Admin only)
 export const deleteCategory = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid category id' });
+    }
     const category = await Category.findByIdAndDelete(req.params.id);
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });

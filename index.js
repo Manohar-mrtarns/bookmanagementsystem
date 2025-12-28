@@ -19,16 +19,32 @@ const app = express();
 // Middlewares
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    origin: process.env.CLIENT_URL
+      ? process.env.CLIENT_URL.split(",").map((o) => o.trim()).filter(Boolean)
+      : "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(async (req, res, next) => {
+  if (req.path === "/api/health") return next();
+  const conn = await connectDB();
+  if (!conn) {
+    return res.status(503).json({
+      success: false,
+      message: "Database not connected",
+    });
+  }
+  return next();
+});
+
 // Connect MongoDB
-connectDB();
+if (!process.env.VERCEL) {
+  connectDB();
+}
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -64,6 +80,11 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+  });
+}
+
+export default app;

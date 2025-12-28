@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Book from '../models/Book.js';
 import Category from '../models/Category.js';
 
@@ -65,8 +66,17 @@ export const createBook = async (req, res) => {
       req.body;
 
     // Validate required fields
-    if (!title || !author || !publication || !category || !ISBN || !quantity || !rackNo) {
+    if (!title || !author || !publication || !category || !ISBN || quantity === undefined || quantity === null || !rackNo) {
       return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    const parsedQuantity = Number(quantity);
+    if (!Number.isFinite(parsedQuantity) || parsedQuantity < 0) {
+      return res.status(400).json({ message: 'Quantity must be a valid number' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(category)) {
+      return res.status(400).json({ message: 'Invalid category' });
     }
 
     // Check if ISBN already exists
@@ -87,8 +97,8 @@ export const createBook = async (req, res) => {
       publication,
       category,
       ISBN,
-      quantity,
-      availableCopies: quantity,
+      quantity: parsedQuantity,
+      availableCopies: parsedQuantity,
       rackNo,
       image: image || 'https://via.placeholder.com/200x300?text=Book+Cover',
       description,
@@ -130,6 +140,9 @@ export const updateBook = async (req, res) => {
     if (author) book.author = author;
     if (publication) book.publication = publication;
     if (category) {
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return res.status(400).json({ message: 'Invalid category' });
+      }
       const categoryExists = await Category.findById(category);
       if (!categoryExists) {
         return res.status(400).json({ message: 'Category not found' });
@@ -137,9 +150,13 @@ export const updateBook = async (req, res) => {
       book.category = category;
     }
     if (ISBN) book.ISBN = ISBN;
-    if (quantity) {
-      const quantityDiff = quantity - book.quantity;
-      book.quantity = quantity;
+    if (quantity !== undefined && quantity !== null) {
+      const parsedQuantity = Number(quantity);
+      if (!Number.isFinite(parsedQuantity) || parsedQuantity < 0) {
+        return res.status(400).json({ message: 'Quantity must be a valid number' });
+      }
+      const quantityDiff = parsedQuantity - book.quantity;
+      book.quantity = parsedQuantity;
       book.availableCopies += quantityDiff;
     }
     if (rackNo) book.rackNo = rackNo;
